@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,11 +92,30 @@ export const AppointmentManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      const userData = storedUser ? JSON.parse(storedUser) : null;
+      
+      if (!userData?.id) {
+        toast({
+          title: "Error",
+          description: "Doctor ID not found. Please log in again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const url = editingAppointment 
         ? `http://localhost:3000/api/appointments/${editingAppointment.appointment_id}`
         : 'http://localhost:3000/api/appointments';
       
       const method = editingAppointment ? 'PUT' : 'POST';
+
+      // Include doctor_id from localStorage in the appointment data
+      const appointmentData = {
+        ...formData,
+        doctor_id: userData.id, // Automatically set doctor_id from logged-in user
+        patient_id: parseInt(formData.patient_id),
+      };
 
       const response = await fetch(url, {
         method,
@@ -105,7 +123,7 @@ export const AppointmentManagement = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(appointmentData)
       });
 
       if (response.ok) {
