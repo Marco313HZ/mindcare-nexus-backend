@@ -38,6 +38,9 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
           case 'doctor':
             dashboardRoute = '/doctor';
             break;
+          case 'patient':
+            dashboardRoute = '/patient';
+            break;
           default:
             dashboardRoute = '/dashboard';
         }

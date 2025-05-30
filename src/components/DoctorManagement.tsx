@@ -93,6 +93,15 @@ export const DoctorManagement = () => {
       return;
     }
 
+    if (!editingDoctor && !formData.password) {
+      toast({
+        title: "Error",
+        description: "Password is required when creating a new doctor",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const url = editingDoctor 
@@ -228,18 +237,17 @@ export const DoctorManagement = () => {
                 />
               </div>
 
-              {!editingDoctor && (
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  required={!editingDoctor}
+                  placeholder={editingDoctor ? "Leave blank to keep current password" : "Enter password"}
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="role_id">Role</Label>

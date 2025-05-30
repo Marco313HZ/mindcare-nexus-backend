@@ -63,6 +63,15 @@ export const PatientManagement = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!editingPatient && !formData.password) {
+      toast({
+        title: "Error",
+        description: "Password is required when creating a new patient",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       const token = localStorage.getItem('token');
       const url = editingPatient 
@@ -198,18 +207,17 @@ export const PatientManagement = () => {
                 />
               </div>
 
-              {!editingPatient && (
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  required={!editingPatient}
+                  placeholder={editingPatient ? "Leave blank to keep current password" : "Enter password"}
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
