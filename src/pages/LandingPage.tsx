@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { ContactForm } from '@/components/ContactForm';
+import { ChatBot } from '@/components/ChatBot';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -245,6 +246,9 @@ export const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* ChatBot */}
+      <ChatBot />
     </div>
   );
 };

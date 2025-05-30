@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
-import { Users, Calendar, FileText, MessageSquare, Plus } from 'lucide-react';
+import { AppointmentManagement } from '@/components/AppointmentManagement';
+import { Users, Calendar, FileText, MessageSquare } from 'lucide-react';
 
 export const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -18,8 +18,8 @@ export const DoctorDashboard = () => {
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
-    { id: 'patients', label: 'My Patients' },
     { id: 'appointments', label: 'Appointments' },
+    { id: 'patients', label: 'My Patients' },
     { id: 'treatments', label: 'Treatments' },
     { id: 'medications', label: 'Medications' },
     { id: 'chat', label: 'Chat' },
@@ -104,40 +104,18 @@ export const DoctorDashboard = () => {
           </div>
         )}
 
+        {/* Appointments Tab */}
+        {activeTab === 'appointments' && <AppointmentManagement />}
+
         {/* Patients Tab */}
         {activeTab === 'patients' && (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>My Patients</CardTitle>
-                <CardDescription>Manage your assigned patients</CardDescription>
-              </div>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Patient
-              </Button>
+            <CardHeader>
+              <CardTitle>My Patients</CardTitle>
+              <CardDescription>Manage your assigned patients</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">Patient management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Appointments Tab */}
-        {activeTab === 'appointments' && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Appointments</CardTitle>
-                <CardDescription>View and manage your appointments</CardDescription>
-              </div>
-              <Button>
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Appointment
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Appointments management interface will be implemented here.</p>
             </CardContent>
           </Card>
         )}

@@ -23,8 +23,6 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
     phone: '',
     userType: '',
     specialization: '', // for doctors
-    address: '', // for patients
-    date_of_birth: '', // for patients
   });
   const [showVerification, setShowVerification] = useState(false);
   const { signup, isLoading } = useAuth();
@@ -69,8 +67,6 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
       phone: '',
       userType: '',
       specialization: '',
-      address: '',
-      date_of_birth: '',
     });
   };
 
@@ -102,7 +98,6 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
                 <SelectContent>
                   <SelectItem value="admin">Super Admin</SelectItem>
                   <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="patient">Patient</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -157,28 +152,6 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
                   onChange={(e) => handleChange('specialization', e.target.value)}
                 />
               </div>
-            )}
-
-            {formData.userType === 'patient' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleChange('address', e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                  />
-                </div>
-              </>
             )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>

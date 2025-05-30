@@ -10,7 +10,6 @@ import { LandingPage } from "@/pages/LandingPage";
 import { Dashboard } from "@/pages/Dashboard";
 import { SuperAdminDashboard } from "@/pages/dashboards/SuperAdminDashboard";
 import { DoctorDashboard } from "@/pages/dashboards/DoctorDashboard";
-import { PatientDashboard } from "@/pages/dashboards/PatientDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,14 +44,6 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['Doctor']}>
                   <DoctorDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route 
-              path="/patient" 
-              element={
-                <ProtectedRoute allowedRoles={['Patient']}>
-                  <PatientDashboard />
                 </ProtectedRoute>
               }
             />

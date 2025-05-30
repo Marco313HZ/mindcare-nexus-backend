@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
-import { Users, UserPlus, Calendar, MessageSquare, BarChart3 } from 'lucide-react';
+import { DoctorManagement } from '@/components/DoctorManagement';
+import { PatientManagement } from '@/components/PatientManagement';
+import { Users, UserPlus, Calendar, MessageSquare } from 'lucide-react';
 
 export const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -105,42 +106,10 @@ export const SuperAdminDashboard = () => {
         )}
 
         {/* Doctors Tab */}
-        {activeTab === 'doctors' && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Doctors Management</CardTitle>
-                <CardDescription>Manage all doctors in the system</CardDescription>
-              </div>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Doctor
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Doctor management interface will be implemented here with full CRUD operations.</p>
-            </CardContent>
-          </Card>
-        )}
+        {activeTab === 'doctors' && <DoctorManagement />}
 
         {/* Patients Tab */}
-        {activeTab === 'patients' && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Patients Management</CardTitle>
-                <CardDescription>Manage all patients in the system</CardDescription>
-              </div>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Add Patient
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Patient management interface will be implemented here with full CRUD operations.</p>
-            </CardContent>
-          </Card>
-        )}
+        {activeTab === 'patients' && <PatientManagement />}
 
         {/* Appointments Tab */}
         {activeTab === 'appointments' && (
