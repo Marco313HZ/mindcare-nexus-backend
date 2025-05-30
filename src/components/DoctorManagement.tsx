@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { UserPlus, Edit, Trash2 } from 'lucide-react';
@@ -16,10 +17,18 @@ interface Doctor {
   specialization: string;
   phone: string;
   is_active: boolean;
+  role_id: number;
+}
+
+interface Role {
+  role_id: number;
+  role_name: string;
+  description: string;
 }
 
 export const DoctorManagement = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [formData, setFormData] = useState({
@@ -27,11 +36,13 @@ export const DoctorManagement = () => {
     email: '',
     password: '',
     specialization: '',
-    phone: ''
+    phone: '',
+    role_id: ''
   });
 
   useEffect(() => {
     fetchDoctors();
+    fetchRoles();
   }, []);
 
   const fetchDoctors = async () => {
@@ -58,9 +69,30 @@ export const DoctorManagement = () => {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/roles');
+      if (response.ok) {
+        const data = await response.json();
+        setRoles(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.role_id) {
+      toast({
+        title: "Error",
+        description: "Please select a role",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const url = editingDoctor 
@@ -135,7 +167,8 @@ export const DoctorManagement = () => {
       email: doctor.email,
       password: '',
       specialization: doctor.specialization,
-      phone: doctor.phone
+      phone: doctor.phone,
+      role_id: doctor.role_id?.toString() || ''
     });
     setIsDialogOpen(true);
   };
@@ -148,7 +181,8 @@ export const DoctorManagement = () => {
       email: '',
       password: '',
       specialization: '',
-      phone: ''
+      phone: '',
+      role_id: ''
     });
   };
 
@@ -206,6 +240,22 @@ export const DoctorManagement = () => {
                   />
                 </div>
               )}
+
+              <div className="space-y-2">
+                <Label htmlFor="role_id">Role</Label>
+                <Select value={formData.role_id} onValueChange={(value) => setFormData(prev => ({ ...prev, role_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((role) => (
+                      <SelectItem key={role.role_id} value={role.role_id.toString()}>
+                        {role.role_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="specialization">Specialization</Label>

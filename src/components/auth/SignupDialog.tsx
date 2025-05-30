@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,12 @@ interface SignupDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface Role {
+  role_id: number;
+  role_name: string;
+  description: string;
+}
+
 export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }) => {
   const [formData, setFormData] = useState({
     full_name: '',
@@ -23,9 +29,29 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
     phone: '',
     userType: '',
     specialization: '', // for doctors
+    role_id: '', // for role selection
   });
+  const [roles, setRoles] = useState<Role[]>([]);
   const [showVerification, setShowVerification] = useState(false);
   const { signup, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (open) {
+      fetchRoles();
+    }
+  }, [open]);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/roles');
+      if (response.ok) {
+        const data = await response.json();
+        setRoles(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +60,15 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
       toast({
         title: "Error",
         description: "Please select a user type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.userType === 'doctor' && !formData.role_id) {
+      toast({
+        title: "Error",
+        description: "Please select a role for the doctor",
         variant: "destructive",
       });
       return;
@@ -67,6 +102,7 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
       phone: '',
       userType: '',
       specialization: '',
+      role_id: '',
     });
   };
 
@@ -144,14 +180,31 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
             </div>
 
             {formData.userType === 'doctor' && (
-              <div className="space-y-2">
-                <Label htmlFor="specialization">Specialization</Label>
-                <Input
-                  id="specialization"
-                  value={formData.specialization}
-                  onChange={(e) => handleChange('specialization', e.target.value)}
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="role_id">Role</Label>
+                  <Select value={formData.role_id} onValueChange={(value) => handleChange('role_id', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.role_id} value={role.role_id.toString()}>
+                          {role.role_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="specialization">Specialization</Label>
+                  <Input
+                    id="specialization"
+                    value={formData.specialization}
+                    onChange={(e) => handleChange('specialization', e.target.value)}
+                  />
+                </div>
+              </>
             )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
