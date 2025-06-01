@@ -29,8 +29,7 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
         // Route based on user role
         const role = loginResponse.user.role;
         let dashboardRoute;
-        
-        // Set dashboard route based on role
+          // Set dashboard route based on role
         switch (role.toLowerCase()) {
           case 'superadmin':
             dashboardRoute = '/super-admin';
@@ -38,11 +37,8 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
           case 'doctor':
             dashboardRoute = '/doctor';
             break;
-          case 'patient':
-            dashboardRoute = '/patient';
-            break;
           default:
-            dashboardRoute = '/dashboard';
+            dashboardRoute = '/';
         }
         
         toast({
