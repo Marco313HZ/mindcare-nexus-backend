@@ -25,11 +25,11 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
     try {
       const loginResponse = await login(email, password);
       
-      if (loginResponse.verified) {
-        // Route based on user role
+      if (loginResponse.verified) {        // Route based on user role
         const role = loginResponse.user.role;
         let dashboardRoute;
-          // Set dashboard route based on role
+        
+        // Set dashboard route based on role
         switch (role.toLowerCase()) {
           case 'superadmin':
             dashboardRoute = '/super-admin';
@@ -41,13 +41,21 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
             dashboardRoute = '/';
         }
         
+        // First close the dialog and clear the form
+        onOpenChange(false);
+        setEmail('');
+        setPassword('');
+        
+        // Show success message
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
-        onOpenChange(false);
-        setEmail('');
-        setPassword('');
+
+        // Use setTimeout to ensure state updates are processed before navigation
+        setTimeout(() => {
+          navigate(dashboardRoute);
+        }, 100);
         
         // Navigate to role-specific dashboard
         navigate(dashboardRoute);

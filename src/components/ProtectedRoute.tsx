@@ -15,18 +15,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user } = useAuth();
 
   if (!user) {
-    return <LandingPage />;
+    window.location.href = '/';
+    return null;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You don't have permission to access this page.</p>
-        </div>
-      </div>
-    );
+    // Redirect based on role
+    if (user.role.toLowerCase() === 'superadmin') {
+      window.location.href = '/super-admin';
+    } else if (user.role.toLowerCase() === 'doctor') {
+      window.location.href = '/doctor';
+    } else {
+      window.location.href = '/';
+    }
+    return null;
   }
 
   return <>{children}</>;
