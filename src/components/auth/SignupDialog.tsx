@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/roles');
+      const response = await fetch(`${API_BASE_URL}/api/roles`);
       if (response.ok) {
         const data = await response.json();
         setRoles(data);

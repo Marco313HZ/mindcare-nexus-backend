@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +39,7 @@ export const PatientManagement = () => {
   const fetchPatients = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/patients', {
+      const response = await fetch(`${API_BASE_URL}/api/patients`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -75,8 +75,8 @@ export const PatientManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingPatient 
-        ? `http://localhost:3000/api/patients/${editingPatient.patient_id}`
-        : 'http://localhost:3000/api/patients';
+        ? `${API_BASE_URL}/api/patients/${editingPatient.patient_id}`
+        : `${API_BASE_URL}/api/patients`;
       
       const method = editingPatient ? 'PUT' : 'POST';
       const submitData = editingPatient 
@@ -114,7 +114,7 @@ export const PatientManagement = () => {
   const handleDelete = async (patientId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/patients/${patientId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

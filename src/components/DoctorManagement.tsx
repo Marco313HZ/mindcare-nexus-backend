@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +48,7 @@ export const DoctorManagement = () => {
   const fetchDoctors = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/doctors', {
+      const response = await fetch(`${API_BASE_URL}/api/doctors`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -71,7 +71,7 @@ export const DoctorManagement = () => {
 
   const fetchRoles = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/roles');
+      const response = await fetch(`${API_BASE_URL}/api/roles`);
       if (response.ok) {
         const data = await response.json();
         setRoles(data);
@@ -105,8 +105,8 @@ export const DoctorManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingDoctor 
-        ? `http://localhost:3000/api/doctors/${editingDoctor.doctor_id}`
-        : 'http://localhost:3000/api/doctors';
+        ? `${API_BASE_URL}/api/doctors/${editingDoctor.doctor_id}`
+        : `${API_BASE_URL}/api/doctors`;
       
       const method = editingDoctor ? 'PUT' : 'POST';
       const submitData = editingDoctor 
@@ -144,7 +144,7 @@ export const DoctorManagement = () => {
   const handleDelete = async (doctorId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/doctors/${doctorId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/doctors/${doctorId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

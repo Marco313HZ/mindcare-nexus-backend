@@ -1,5 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Navbar } from '@/components/Navbar';
 import { ContactForm } from '@/components/ContactForm';
 import { ChatBot } from '@/components/ChatBot';
@@ -24,7 +24,7 @@ export const LandingPage = () => {
 
   const fetchContactInfo = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/contact-us');
+      const response = await fetch(`${API_BASE_URL}/api/contact-us`);
       if (response.ok) {
         const data = await response.json();
         setContactInfo(data[0]); // Assuming we get an array with the first item being the contact info

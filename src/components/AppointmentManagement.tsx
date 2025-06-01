@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,10 @@ export const AppointmentManagement = () => {
     status: 'Scheduled' as 'Scheduled' | 'Completed' | 'Cancelled',
     notes: ''
   });
+  const [userData] = useState(() => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : { id: null };
+  });
 
   useEffect(() => {
     fetchAppointments();
@@ -47,7 +52,7 @@ export const AppointmentManagement = () => {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/appointments', {
+      const response = await fetch(`${API_BASE_URL}/api/appointments`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -71,7 +76,7 @@ export const AppointmentManagement = () => {
   const fetchPatients = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/patients', {
+      const response = await fetch(`${API_BASE_URL}/api/patients`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -92,21 +97,9 @@ export const AppointmentManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-      const userData = storedUser ? JSON.parse(storedUser) : null;
-      
-      if (!userData?.id) {
-        toast({
-          title: "Error",
-          description: "Doctor ID not found. Please log in again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const url = editingAppointment 
-        ? `http://localhost:3000/api/appointments/${editingAppointment.appointment_id}`
-        : 'http://localhost:3000/api/appointments';
+        ? `${API_BASE_URL}/api/appointments/${editingAppointment.appointment_id}`
+        : `${API_BASE_URL}/api/appointments`;
       
       const method = editingAppointment ? 'PUT' : 'POST';
 
@@ -148,7 +141,7 @@ export const AppointmentManagement = () => {
   const handleDelete = async (appointmentId: number) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/appointments/${appointmentId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/appointments/${appointmentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

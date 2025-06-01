@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/config/api';
 
 interface User {
   id: number;
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userType: userType.toLowerCase() === 'admin' ? 'SuperAdmin' : userType
       };
 
-      const response = await fetch(`http://localhost:3000/api/auth/signup/${userType}`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup/${userType}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         : userType.toLowerCase() === 'patient' ? 'Patient'
         : userType;
 
-      const response = await fetch('http://localhost:3000/api/auth/verify-email', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

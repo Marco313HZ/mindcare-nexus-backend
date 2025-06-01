@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { API_BASE_URL } from '@/config/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +25,7 @@ export const ContactForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/contact-messages', {
+      const response = await fetch(`${API_BASE_URL}/api/contact-messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
