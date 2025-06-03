@@ -25,11 +25,14 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
     try {
       const loginResponse = await login(email, password);
       
-      if (loginResponse.verified) {        // Route based on user role
+      if (loginResponse.verified) {
+        // Route based on user role
         const role = loginResponse.user.role;
+        console.log('Routing user with role:', role);
+        
         let dashboardRoute;
         
-        // Set dashboard route based on role
+        // Set dashboard route based on role (case-insensitive)
         switch (role.toLowerCase()) {
           case 'superadmin':
             dashboardRoute = '/super-admin';
@@ -37,11 +40,17 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
           case 'doctor':
             dashboardRoute = '/doctor';
             break;
+          case 'patient':
+            dashboardRoute = '/patient';
+            break;
           default:
+            console.warn('Unknown role:', role, 'redirecting to home');
             dashboardRoute = '/';
         }
         
-        // First close the dialog and clear the form
+        console.log('Navigating to:', dashboardRoute);
+        
+        // Close dialog and clear form
         onOpenChange(false);
         setEmail('');
         setPassword('');
@@ -49,18 +58,14 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) 
         // Show success message
         toast({
           title: "Login successful",
-          description: "Welcome back!",
+          description: `Welcome back! Redirecting to ${role} dashboard...`,
         });
 
-        // Use setTimeout to ensure state updates are processed before navigation
-        setTimeout(() => {
-          navigate(dashboardRoute);
-        }, 100);
-        
         // Navigate to role-specific dashboard
         navigate(dashboardRoute);
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: error.message,

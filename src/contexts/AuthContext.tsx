@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/config/api';
 
@@ -76,19 +77,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store all relevant data in localStorage
+      // Store token and user data
       setToken(data.token);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify({
         id: data.user.id,
+        full_name: data.user.full_name || '',
+        email: data.user.email || '',
         role: data.user.role,
-        is_active: data.user.is_active,
-        // Add any other relevant user data you want to store
+        is_active: data.is_active
       }));
-      setUser(data.user);
+      
+      // Set user state with complete data
+      setUser({
+        id: data.user.id,
+        full_name: data.user.full_name || '',
+        email: data.user.email || '',
+        role: data.user.role,
+        is_active: data.is_active
+      });
 
-      // Then check if the user is verified
-      if (!data.user.is_active) {
+      console.log('Login successful, user role:', data.user.role, 'is_active:', data.is_active);
+
+      // Check if the user is verified
+      if (!data.is_active) {
         return { verified: false, user: data.user };
       }
 
