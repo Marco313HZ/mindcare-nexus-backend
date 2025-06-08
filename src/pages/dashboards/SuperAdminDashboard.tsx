@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ export const SuperAdminDashboard = () => {
   const stats = [
     { title: 'Total Doctors', value: '24', icon: Users, color: 'text-blue-600' },
     { title: 'Total Patients', value: '156', icon: UserPlus, color: 'text-green-600' },
-    { title: 'Appointments Today', value: '12', icon: Calendar, color: 'text-purple-600' },
+    { title: 'Completed Appointments', value: '12', icon: Calendar, color: 'text-purple-600' },
     { title: 'New Messages', value: '8', icon: MessageSquare, color: 'text-orange-600' },
   ];
 
@@ -87,15 +88,15 @@ export const SuperAdminDashboard = () => {
                   </div>
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">Appointment scheduled</p>
+                      <p className="font-medium">Appointment completed</p>
                       <p className="text-sm text-gray-600">Patient consultation with Dr. Smith</p>
                     </div>
-                    <Badge variant="secondary">Recent</Badge>
+                    <Badge variant="secondary">Completed</Badge>
                   </div>
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">New contact message</p>
-                      <p className="text-sm text-gray-600">Inquiry about therapy services</p>
+                      <p className="text-sm text-gray-600">Inquiry about services</p>
                     </div>
                     <Badge variant="outline">Message</Badge>
                   </div>

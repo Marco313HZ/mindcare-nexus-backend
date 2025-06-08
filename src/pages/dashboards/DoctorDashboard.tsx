@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { AppointmentManagement } from '@/components/AppointmentManagement';
-import { Users, Calendar, FileText, MessageSquare } from 'lucide-react';
+import { PatientManagement } from '@/components/PatientManagement';
+import { Users, Calendar, FileText, Archive } from 'lucide-react';
 
 export const DoctorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -12,17 +14,15 @@ export const DoctorDashboard = () => {
   const stats = [
     { title: 'My Patients', value: '28', icon: Users, color: 'text-blue-600' },
     { title: 'Today\'s Appointments', value: '6', icon: Calendar, color: 'text-green-600' },
-    { title: 'Active Treatments', value: '15', icon: FileText, color: 'text-purple-600' },
-    { title: 'New Messages', value: '3', icon: MessageSquare, color: 'text-orange-600' },
+    { title: 'Completed Appointments', value: '15', icon: FileText, color: 'text-purple-600' },
+    { title: 'Patient Records', value: '125', icon: Archive, color: 'text-orange-600' },
   ];
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'appointments', label: 'Appointments' },
     { id: 'patients', label: 'My Patients' },
-    { id: 'treatments', label: 'Treatments' },
-    { id: 'medications', label: 'Medications' },
-    { id: 'chat', label: 'Chat' },
+    { id: 'archive', label: 'Archive' },
   ];
 
   return (
@@ -72,8 +72,8 @@ export const DoctorDashboard = () => {
             {/* Today's Schedule */}
             <Card>
               <CardHeader>
-                <CardTitle>Today's Schedule</CardTitle>
-                <CardDescription>Your appointments for today</CardDescription>
+                <CardTitle>Today's Completed Appointments</CardTitle>
+                <CardDescription>Your completed appointments for today</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -82,21 +82,21 @@ export const DoctorDashboard = () => {
                       <p className="font-medium">9:00 AM - Initial Consultation</p>
                       <p className="text-sm text-gray-600">John Smith - Depression screening</p>
                     </div>
-                    <Badge>Upcoming</Badge>
+                    <Badge variant="secondary">Completed</Badge>
                   </div>
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">11:00 AM - Follow-up Session</p>
-                      <p className="text-sm text-gray-600">Sarah Johnson - Anxiety treatment</p>
+                      <p className="text-sm text-gray-600">Sarah Johnson - Anxiety follow-up</p>
                     </div>
-                    <Badge variant="secondary">In Progress</Badge>
+                    <Badge variant="secondary">Completed</Badge>
                   </div>
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">2:00 PM - Therapy Session</p>
                       <p className="text-sm text-gray-600">Michael Brown - PTSD therapy</p>
                     </div>
-                    <Badge variant="outline">Scheduled</Badge>
+                    <Badge>Scheduled</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -108,53 +108,42 @@ export const DoctorDashboard = () => {
         {activeTab === 'appointments' && <AppointmentManagement />}
 
         {/* Patients Tab */}
-        {activeTab === 'patients' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>My Patients</CardTitle>
-              <CardDescription>Manage your assigned patients</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Patient management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
+        {activeTab === 'patients' && <PatientManagement />}
 
-        {/* Treatments Tab */}
-        {activeTab === 'treatments' && (
+        {/* Archive Tab */}
+        {activeTab === 'archive' && (
           <Card>
             <CardHeader>
-              <CardTitle>Treatment Plans</CardTitle>
-              <CardDescription>Manage patient treatment plans</CardDescription>
+              <CardTitle>Patient Archive</CardTitle>
+              <CardDescription>Patient history, appointments, and records</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Treatment plans management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Medications Tab */}
-        {activeTab === 'medications' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Medications</CardTitle>
-              <CardDescription>Manage patient medications</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Medications management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Chat Tab */}
-        {activeTab === 'chat' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Chat & Messages</CardTitle>
-              <CardDescription>Communicate with patients and colleagues</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Chat interface will be implemented here.</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">John Smith</p>
+                    <p className="text-sm text-gray-600">Last appointment: Dec 5, 2024 - Depression screening completed</p>
+                    <p className="text-sm text-gray-500">Total appointments: 8 | Status: Active</p>
+                  </div>
+                  <Badge>View History</Badge>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Sarah Johnson</p>
+                    <p className="text-sm text-gray-600">Last appointment: Dec 4, 2024 - Anxiety follow-up completed</p>
+                    <p className="text-sm text-gray-500">Total appointments: 12 | Status: Active</p>
+                  </div>
+                  <Badge>View History</Badge>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Michael Brown</p>
+                    <p className="text-sm text-gray-600">Last appointment: Dec 3, 2024 - PTSD therapy completed</p>
+                    <p className="text-sm text-gray-500">Total appointments: 6 | Status: Active</p>
+                  </div>
+                  <Badge>View History</Badge>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
