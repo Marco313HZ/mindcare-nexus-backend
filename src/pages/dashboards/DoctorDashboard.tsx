@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { AppointmentManagement } from '@/components/AppointmentManagement';
 import { PatientManagement } from '@/components/PatientManagement';
-import { Users, Calendar, FileText, Archive } from 'lucide-react';
+import { Users, Calendar, FileText } from 'lucide-react';
 import { API_BASE_URL } from '@/config/api';
 
 interface Patient {
@@ -21,9 +21,10 @@ interface Patient {
 
 interface Appointment {
   appointment_id: number;
-  patient_name: string;
+  patient_id: number;
+  patient_name?: string;
   appointment_date: string;
-  appointment_time: string;
+  reason: string;
   status: string;
   notes?: string;
 }
@@ -33,11 +34,11 @@ export const DoctorDashboard = () => {
   const [stats, setStats] = useState({
     myPatients: 0,
     todaysAppointments: 0,
-    completedAppointments: 0,
     patientRecords: 0
   });
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([]);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -49,6 +50,7 @@ export const DoctorDashboard = () => {
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchStats();
+      fetchTodaysAppointments();
     } else if (activeTab === 'archive') {
       fetchArchiveData();
     }
@@ -89,14 +91,10 @@ export const DoctorDashboard = () => {
         const todaysAppointments = appointmentsData.filter((apt: any) => 
           apt.appointment_date?.split('T')[0] === today
         );
-        const completedAppointments = appointmentsData.filter((apt: any) => 
-          apt.status === 'completed'
-        );
 
         setStats(prev => ({
           ...prev,
-          todaysAppointments: todaysAppointments.length,
-          completedAppointments: completedAppointments.length
+          todaysAppointments: todaysAppointments.length
         }));
       }
     } catch (error) {
@@ -104,9 +102,32 @@ export const DoctorDashboard = () => {
       setStats({
         myPatients: 0,
         todaysAppointments: 0,
-        completedAppointments: 0,
         patientRecords: 0
       });
+    }
+  };
+
+  const fetchTodaysAppointments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/appointments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const appointmentsData = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        const todaysAppts = appointmentsData.filter((apt: any) => 
+          apt.appointment_date?.split('T')[0] === today
+        );
+        setTodaysAppointments(todaysAppts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch today\'s appointments:', error);
+      setTodaysAppointments([]);
     }
   };
 
@@ -147,14 +168,27 @@ export const DoctorDashboard = () => {
   };
 
   const getPatientAppointments = (patientId: number) => {
-    return appointments.filter(apt => apt.patient_name); // This would need proper patient ID matching
+    return appointments.filter(apt => apt.patient_id === patientId);
+  };
+
+  const getPatientName = (patientId: number) => {
+    const patient = patients.find(p => p.patient_id === patientId);
+    return patient ? patient.full_name : 'Unknown Patient';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'scheduled': return 'bg-blue-100 text-blue-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const statsCards = [
     { title: 'My Patients', value: stats.myPatients.toString(), icon: Users, color: 'text-blue-600' },
     { title: 'Today\'s Appointments', value: stats.todaysAppointments.toString(), icon: Calendar, color: 'text-green-600' },
-    { title: 'Completed Appointments', value: stats.completedAppointments.toString(), icon: FileText, color: 'text-purple-600' },
-    { title: 'Patient Records', value: stats.patientRecords.toString(), icon: Archive, color: 'text-orange-600' },
+    { title: 'Patient Records', value: stats.patientRecords.toString(), icon: FileText, color: 'text-orange-600' },
   ];
 
   return (
@@ -185,7 +219,7 @@ export const DoctorDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {statsCards.map((stat, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -203,31 +237,39 @@ export const DoctorDashboard = () => {
               ))}
             </div>
 
-            {/* Today's Completed Appointments */}
+            {/* Today's Appointments */}
             <Card>
               <CardHeader>
-                <CardTitle>Today's Completed Appointments</CardTitle>
-                <CardDescription>Your completed appointments for today</CardDescription>
+                <CardTitle>Today's Appointments</CardTitle>
+                <CardDescription>All your appointments for today</CardDescription>
               </CardHeader>
               <CardContent>
-                {stats.completedAppointments > 0 ? (
+                {todaysAppointments.length > 0 ? (
                   <div className="space-y-4">
-                    {appointments
-                      .filter(apt => apt.status === 'completed')
-                      .slice(0, 3)
-                      .map((appointment, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <p className="font-medium">{appointment.appointment_time} - {appointment.patient_name}</p>
-                            <p className="text-sm text-gray-600">{appointment.notes || 'Appointment completed'}</p>
-                          </div>
-                          <Badge variant="secondary">Completed</Badge>
+                    {todaysAppointments.map((appointment, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">
+                            {new Date(appointment.appointment_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {getPatientName(appointment.patient_id)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <strong>Reason:</strong> {appointment.reason}
+                          </p>
+                          {appointment.notes && (
+                            <p className="text-sm text-gray-600">
+                              <strong>Notes:</strong> {appointment.notes}
+                            </p>
+                          )}
                         </div>
-                      ))}
+                        <Badge className={getStatusColor(appointment.status)}>
+                          {appointment.status}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-600">No completed appointments found yet</p>
+                    <p className="text-gray-600">No appointments found for today</p>
                   </div>
                 )}
               </CardContent>
