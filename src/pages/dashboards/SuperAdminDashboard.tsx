@@ -1,30 +1,74 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { DoctorManagement } from '@/components/DoctorManagement';
 import { PatientManagement } from '@/components/PatientManagement';
-import { Users, UserPlus, Calendar, MessageSquare } from 'lucide-react';
+import { Users, UserPlus } from 'lucide-react';
+import { API_BASE_URL } from '@/config/api';
 
 export const SuperAdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-
-  const stats = [
-    { title: 'Total Doctors', value: '24', icon: Users, color: 'text-blue-600' },
-    { title: 'Total Patients', value: '156', icon: UserPlus, color: 'text-green-600' },
-    { title: 'Completed Appointments', value: '12', icon: Calendar, color: 'text-purple-600' },
-    { title: 'New Messages', value: '8', icon: MessageSquare, color: 'text-orange-600' },
-  ];
+  const [stats, setStats] = useState({
+    totalDoctors: 0,
+    totalPatients: 0
+  });
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'doctors', label: 'Doctors' },
-    { id: 'patients', label: 'Patients' },
-    { id: 'appointments', label: 'Appointments' },
-    { id: 'roles', label: 'Roles & Permissions' },
-    { id: 'messages', label: 'Messages' },
+    { id: 'patients', label: 'Patients' }
+  ];
+
+  useEffect(() => {
+    if (activeTab === 'overview') {
+      fetchStats();
+    }
+  }, [activeTab]);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Fetch doctors count
+      const doctorsResponse = await fetch(`${API_BASE_URL}/api/doctors`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Fetch patients count
+      const patientsResponse = await fetch(`${API_BASE_URL}/api/patients`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (doctorsResponse.ok && patientsResponse.ok) {
+        const doctorsData = await doctorsResponse.json();
+        const patientsData = await patientsResponse.json();
+        
+        setStats({
+          totalDoctors: doctorsData.length,
+          totalPatients: patientsData.length
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      setStats({
+        totalDoctors: 0,
+        totalPatients: 0
+      });
+    }
+  };
+
+  const statsCards = [
+    { title: 'Total Doctors', value: stats.totalDoctors.toString(), icon: Users, color: 'text-blue-600' },
+    { title: 'Total Patients', value: stats.totalPatients.toString(), icon: UserPlus, color: 'text-green-600' }
   ];
 
   return (
@@ -55,8 +99,8 @@ export const SuperAdminDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {stats.map((stat, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {statsCards.map((stat, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-gray-600">
@@ -65,7 +109,9 @@ export const SuperAdminDashboard = () => {
                     <stat.icon className={`h-6 w-6 ${stat.color}`} />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">{stat.value}</div>
+                    <div className="text-3xl font-bold">
+                      {stat.value === '0' ? 'No data found yet' : stat.value}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -79,27 +125,32 @@ export const SuperAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">New doctor registration</p>
-                      <p className="text-sm text-gray-600">Dr. Sarah Johnson joined as a Psychiatrist</p>
+                  {stats.totalDoctors > 0 || stats.totalPatients > 0 ? (
+                    <>
+                      {stats.totalDoctors > 0 && (
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <p className="font-medium">Doctor Management</p>
+                            <p className="text-sm text-gray-600">{stats.totalDoctors} doctors registered in the system</p>
+                          </div>
+                          <Badge>Active</Badge>
+                        </div>
+                      )}
+                      {stats.totalPatients > 0 && (
+                        <div className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <p className="font-medium">Patient Management</p>
+                            <p className="text-sm text-gray-600">{stats.totalPatients} patients registered in the system</p>
+                          </div>
+                          <Badge variant="secondary">Active</Badge>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">No recent activity found yet</p>
                     </div>
-                    <Badge>New</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Appointment completed</p>
-                      <p className="text-sm text-gray-600">Patient consultation with Dr. Smith</p>
-                    </div>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">New contact message</p>
-                      <p className="text-sm text-gray-600">Inquiry about services</p>
-                    </div>
-                    <Badge variant="outline">Message</Badge>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -111,45 +162,6 @@ export const SuperAdminDashboard = () => {
 
         {/* Patients Tab */}
         {activeTab === 'patients' && <PatientManagement />}
-
-        {/* Appointments Tab */}
-        {activeTab === 'appointments' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Appointments Management</CardTitle>
-              <CardDescription>View and manage all appointments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Appointments management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Roles & Permissions Tab */}
-        {activeTab === 'roles' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Roles & Permissions</CardTitle>
-              <CardDescription>Manage user roles and permissions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Roles and permissions management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Messages Tab */}
-        {activeTab === 'messages' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Messages</CardTitle>
-              <CardDescription>View and respond to contact form submissions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Messages management interface will be implemented here.</p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
