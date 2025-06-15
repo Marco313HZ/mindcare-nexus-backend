@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { LandingPage } from "@/pages/LandingPage";
 import { Dashboard } from "@/pages/Dashboard";
+import { Profile } from "@/pages/Profile";
 import { SuperAdminDashboard } from "@/pages/dashboards/SuperAdminDashboard";
 import { DoctorDashboard } from "@/pages/dashboards/DoctorDashboard";
 import NotFound from "./pages/NotFound";
@@ -18,7 +19,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />      <AuthProvider>
+      <Sonner />
+      <AuthProvider>
         <BrowserRouter basename="/">
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -27,6 +29,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

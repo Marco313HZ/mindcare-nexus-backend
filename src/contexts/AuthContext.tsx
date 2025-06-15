@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/config/api';
 
@@ -8,6 +7,7 @@ interface User {
   email: string;
   role: string;
   is_active: boolean;
+  profile_picture?: string;
 }
 
 interface AuthContextType {
@@ -47,7 +47,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             full_name: userData.full_name || '',
             email: userData.email || '',
             role: userData.role,
-            is_active: userData.is_active
+            is_active: userData.is_active,
+            profile_picture: userData.profile_picture || ''
           });
         }
       } catch (error) {
@@ -85,7 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         full_name: data.user.full_name || '',
         email: data.user.email || '',
         role: data.user.role,
-        is_active: data.is_active
+        is_active: data.is_active,
+        profile_picture: data.user.profile_picture || ''
       }));
       
       // Set user state with complete data
@@ -94,7 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         full_name: data.user.full_name || '',
         email: data.user.email || '',
         role: data.user.role,
-        is_active: data.is_active
+        is_active: data.is_active,
+        profile_picture: data.user.profile_picture || ''
       });
 
       console.log('Login successful, user role:', data.user.role, 'is_active:', data.is_active);

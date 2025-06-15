@@ -3,17 +3,25 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Menu, X, User, LogOut } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { LoginDialog } from './auth/LoginDialog';
 import { SignupDialog } from './auth/SignupDialog';
+import { useNavigate } from 'react-router-dom';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
   const handleLogout = () => {
     logout();
+    setIsMenuOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
     setIsMenuOpen(false);
   };
 
@@ -34,12 +42,24 @@ export const Navbar = () => {
               
               {user ? (
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <User className="h-5 w-5 text-gray-600" />
-                    <span className="text-gray-700">{user.full_name}</span>
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {user.role}
-                    </span>
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleProfileClick}
+                      className="flex items-center space-x-2 hover:bg-gray-100"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.profile_picture} alt={user.full_name} />
+                        <AvatarFallback className="text-sm">
+                          {user.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-gray-700">{user.full_name}</p>
+                        <p className="text-xs text-blue-600">{user.role}</p>
+                      </div>
+                    </Button>
                   </div>
                   <Button onClick={handleLogout} variant="outline" size="sm">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -80,13 +100,24 @@ export const Navbar = () => {
               
               {user ? (
                 <div className="border-t border-gray-200 pt-4">
-                  <div className="px-3 py-2">
-                    <p className="text-gray-700 font-medium">{user.full_name}</p>
-                    <p className="text-sm text-gray-500">{user.role}</p>
-                  </div>
+                  <button
+                    onClick={handleProfileClick}
+                    className="flex items-center space-x-3 px-3 py-2 w-full text-left hover:bg-gray-50"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user.profile_picture} alt={user.full_name} />
+                      <AvatarFallback>
+                        {user.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium text-gray-700">{user.full_name}</p>
+                      <p className="text-sm text-gray-500">{user.role}</p>
+                    </div>
+                  </button>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                    className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 mt-2"
                   >
                     Logout
                   </button>

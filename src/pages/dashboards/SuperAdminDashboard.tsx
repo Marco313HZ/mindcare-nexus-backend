@@ -7,9 +7,11 @@ import { Navbar } from '@/components/Navbar';
 import { DoctorManagement } from '@/components/DoctorManagement';
 import { PatientManagement } from '@/components/PatientManagement';
 import { Users, UserPlus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config/api';
 
 export const SuperAdminDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalDoctors: 0,
@@ -71,13 +73,23 @@ export const SuperAdminDashboard = () => {
     { title: 'Total Patients', value: stats.totalPatients.toString(), icon: UserPlus, color: 'text-green-600' }
   ];
 
+  const getWelcomeMessage = () => {
+    if (!user?.full_name) return 'Welcome';
+    
+    const firstName = user.full_name.split(' ')[0];
+    if (user.role === 'SuperAdmin') {
+      return `Welcome, ${firstName} Admin`;
+    }
+    return `Welcome, ${user.full_name}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mt-2">Manage your psychiatric center operations</p>
         </div>
 

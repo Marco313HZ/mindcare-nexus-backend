@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { AppointmentManagement } from '@/components/AppointmentManagement';
 import { PatientManagement } from '@/components/PatientManagement';
-import { Users, Calendar, FileText } from 'lucide-react';
+import { Users, Calendar } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config/api';
 
 interface Patient {
@@ -30,11 +30,11 @@ interface Appointment {
 }
 
 export const DoctorDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     myPatients: 0,
-    todaysAppointments: 0,
-    patientRecords: 0
+    todaysAppointments: 0
   });
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -80,8 +80,7 @@ export const DoctorDashboard = () => {
         const patientsData = await patientsResponse.json();
         setStats(prev => ({
           ...prev,
-          myPatients: patientsData.length,
-          patientRecords: patientsData.length
+          myPatients: patientsData.length
         }));
       }
 
@@ -101,8 +100,7 @@ export const DoctorDashboard = () => {
       console.error('Failed to fetch stats:', error);
       setStats({
         myPatients: 0,
-        todaysAppointments: 0,
-        patientRecords: 0
+        todaysAppointments: 0
       });
     }
   };
@@ -185,10 +183,18 @@ export const DoctorDashboard = () => {
     }
   };
 
+  const getWelcomeMessage = () => {
+    if (!user?.full_name) return 'Welcome';
+    
+    if (user.role === 'Doctor') {
+      return `Welcome, Dr. ${user.full_name}`;
+    }
+    return `Welcome, ${user.full_name}`;
+  };
+
   const statsCards = [
     { title: 'My Patients', value: stats.myPatients.toString(), icon: Users, color: 'text-blue-600' },
-    { title: 'Today\'s Appointments', value: stats.todaysAppointments.toString(), icon: Calendar, color: 'text-green-600' },
-    { title: 'Patient Records', value: stats.patientRecords.toString(), icon: FileText, color: 'text-orange-600' },
+    { title: 'Today\'s Appointments', value: stats.todaysAppointments.toString(), icon: Calendar, color: 'text-green-600' }
   ];
 
   return (
@@ -197,7 +203,7 @@ export const DoctorDashboard = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{getWelcomeMessage()}</h1>
           <p className="text-gray-600 mt-2">Manage your patients and appointments</p>
         </div>
 
@@ -219,7 +225,7 @@ export const DoctorDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {statsCards.map((stat, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
