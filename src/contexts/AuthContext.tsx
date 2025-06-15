@@ -78,29 +78,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token and user data
+      console.log('Login response data:', data);
+
+      // Store token and user data with all available information
       setToken(data.token);
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify({
+      
+      // Make sure we capture all user data from the response
+      const completeUserData = {
         id: data.user.id,
-        full_name: data.user.full_name || '',
-        email: data.user.email || '',
-        role: data.user.role,
-        is_active: data.is_active,
-        profile_picture: data.user.profile_picture || ''
-      }));
+        full_name: data.user.full_name || data.full_name || '',
+        email: data.user.email || data.email || email,
+        role: data.user.role || data.role,
+        is_active: data.is_active !== undefined ? data.is_active : true,
+        profile_picture: data.user.profile_picture || data.profile_picture || ''
+      };
+
+      localStorage.setItem('user', JSON.stringify(completeUserData));
       
       // Set user state with complete data
-      setUser({
-        id: data.user.id,
-        full_name: data.user.full_name || '',
-        email: data.user.email || '',
-        role: data.user.role,
-        is_active: data.is_active,
-        profile_picture: data.user.profile_picture || ''
-      });
+      setUser(completeUserData);
 
-      console.log('Login successful, user role:', data.user.role, 'is_active:', data.is_active);
+      console.log('Complete user data stored:', completeUserData);
 
       // Check if the user is verified
       if (!data.is_active) {

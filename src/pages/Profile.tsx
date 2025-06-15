@@ -16,6 +16,7 @@ export const Profile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -77,6 +78,15 @@ export const Profile = () => {
       return;
     }
 
+    if (formData.password && formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -84,7 +94,9 @@ export const Profile = () => {
       formDataToSend.append('full_name', formData.full_name);
       
       if (formData.password) {
-        formDataToSend.append('password', formData.password);
+        // Use the correct field name based on user role
+        const passwordField = user?.role === 'SuperAdmin' ? 'password_hash' : 'password';
+        formDataToSend.append(passwordField, formData.password);
       }
       
       if (selectedFile) {
@@ -121,6 +133,9 @@ export const Profile = () => {
       setIsEditing(false);
       setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
       setSelectedFile(null);
+
+      // Refresh the page to reflect changes
+      window.location.reload();
 
     } catch (error) {
       toast({
@@ -245,6 +260,7 @@ export const Profile = () => {
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder="Enter new password"
+                        minLength={6}
                       />
                       <Button
                         type="button"
@@ -260,14 +276,25 @@ export const Profile = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      placeholder="Confirm new password"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        placeholder="Confirm new password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}
