@@ -1,11 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { AppointmentManagement } from '@/components/AppointmentManagement';
 import { PatientManagement } from '@/components/PatientManagement';
-import { Users, Calendar } from 'lucide-react';
+import { PatientDetailsModal } from '@/components/PatientDetailsModal';
+import { Users, Calendar, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config/api';
 
@@ -39,6 +42,12 @@ export const DoctorDashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [todaysAppointments, setTodaysAppointments] = useState<Appointment[]>([]);
+  
+  // Archive tab search and modal state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedPatientAppointments, setSelectedPatientAppointments] = useState<Appointment[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -197,6 +206,17 @@ export const DoctorDashboard = () => {
     { title: 'Today\'s Appointments', value: stats.todaysAppointments.toString(), icon: Calendar, color: 'text-green-600' }
   ];
 
+  // Filter patients based on search term
+  const filteredPatients = patients.filter(patient =>
+    patient.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleViewPatient = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setSelectedPatientAppointments(getPatientAppointments(patient.patient_id));
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -297,9 +317,22 @@ export const DoctorDashboard = () => {
               <CardDescription>Patient history, appointments, and records</CardDescription>
             </CardHeader>
             <CardContent>
-              {patients.length > 0 ? (
+              {/* Search Bar */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search patients by name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {filteredPatients.length > 0 ? (
                 <div className="space-y-4">
-                  {patients.map((patient) => {
+                  {filteredPatients.map((patient) => {
                     const patientAppointments = getPatientAppointments(patient.patient_id);
                     const lastAppointment = patientAppointments[patientAppointments.length - 1];
                     
@@ -321,20 +354,35 @@ export const DoctorDashboard = () => {
                             Status: {patient.is_active ? 'Active' : 'Inactive'}
                           </p>
                         </div>
-                        <Badge>View History</Badge>
+                        <Button
+                          onClick={() => handleViewPatient(patient)}
+                          variant="outline"
+                        >
+                          View Only
+                        </Button>
                       </div>
                     );
                   })}
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">No patient data found yet</p>
+                  <p className="text-gray-600">
+                    {searchTerm ? 'No patients found matching your search' : 'No patient data found yet'}
+                  </p>
                 </div>
               )}
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Patient Details Modal */}
+      <PatientDetailsModal
+        patient={selectedPatient}
+        appointments={selectedPatientAppointments}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

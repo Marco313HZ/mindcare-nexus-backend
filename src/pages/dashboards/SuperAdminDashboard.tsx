@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Navbar } from '@/components/Navbar';
 import { DoctorManagement } from '@/components/DoctorManagement';
@@ -9,19 +10,31 @@ import { PatientManagement } from '@/components/PatientManagement';
 import { Users, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config/api';
+import { useToast } from '@/hooks/use-toast';
 
 export const SuperAdminDashboard = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalDoctors: 0,
     totalPatients: 0
   });
 
+  // Form state for creating new super admin
+  const [newAdminForm, setNewAdminForm] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    phone: ''
+  });
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'doctors', label: 'Doctors' },
-    { id: 'patients', label: 'Patients' }
+    { id: 'patients', label: 'Patients' },
+    { id: 'create-admin', label: 'Create Super Admin' }
   ];
 
   useEffect(() => {
@@ -66,6 +79,62 @@ export const SuperAdminDashboard = () => {
         totalPatients: 0
       });
     }
+  };
+
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreatingAdmin(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup/admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...newAdminForm,
+          userType: 'SuperAdmin'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create super admin');
+      }
+
+      toast({
+        title: "Success",
+        description: "Super admin created successfully!",
+      });
+
+      // Reset form
+      setNewAdminForm({
+        full_name: '',
+        email: '',
+        password: '',
+        phone: ''
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create super admin",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingAdmin(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewAdminForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const statsCards = [
@@ -174,6 +243,80 @@ export const SuperAdminDashboard = () => {
 
         {/* Patients Tab */}
         {activeTab === 'patients' && <PatientManagement />}
+
+        {/* Create Super Admin Tab */}
+        {activeTab === 'create-admin' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Super Admin</CardTitle>
+              <CardDescription>Register a new super administrator for the system</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateAdmin} className="space-y-4 max-w-md">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    type="text"
+                    value={newAdminForm.full_name}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter full name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={newAdminForm.email}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={newAdminForm.password}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter password"
+                    minLength={6}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={newAdminForm.phone}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter phone number"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isCreatingAdmin}
+                >
+                  {isCreatingAdmin ? 'Creating...' : 'Create Super Admin'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
