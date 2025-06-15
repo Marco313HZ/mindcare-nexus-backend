@@ -193,12 +193,13 @@ export const DoctorDashboard = () => {
   };
 
   const getWelcomeMessage = () => {
-    if (!user?.full_name) return 'Welcome';
+    const displayName = user?.full_name;
+    if (!displayName) return 'Welcome';
     
-    if (user.role === 'Doctor') {
-      return `Welcome, Dr. ${user.full_name}`;
+    if (user?.role === 'Doctor') {
+      return `Welcome, Dr. ${displayName}`;
     }
-    return `Welcome, ${user.full_name}`;
+    return `Welcome, ${displayName}`;
   };
 
   const statsCards = [

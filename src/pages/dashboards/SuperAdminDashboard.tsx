@@ -21,14 +21,13 @@ export const SuperAdminDashboard = () => {
     totalDoctors: 0,
     totalPatients: 0
   });
-  const [userDetails, setUserDetails] = useState<any>(null);
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
   // Form state for creating new super admin
   const [newAdminForm, setNewAdminForm] = useState({
     full_name: '',
     email: '',
-    password_hash: '',
+    password: '',
     phone: ''
   });
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
@@ -37,44 +36,14 @@ export const SuperAdminDashboard = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'doctors', label: 'Doctors' },
     { id: 'patients', label: 'Patients' },
-    { id: 'admins', label: 'Super Admins' }
+    { id: 'create-admin', label: 'Create Super Admin' }
   ];
 
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchStats();
     }
-    fetchUserDetails();
   }, [activeTab, user]);
-
-  const fetchUserDetails = async () => {
-    if (!user?.id || !token) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/superadmin/${user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUserDetails(data);
-        
-        // Update localStorage with complete user data
-        const updatedUser = {
-          ...user,
-          full_name: data.full_name,
-          email: data.email,
-          profile_picture: data.profile_picture || ''
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-    } catch (error) {
-      console.error('Failed to fetch user details:', error);
-    }
-  };
 
   const fetchStats = async () => {
     try {
@@ -117,16 +86,13 @@ export const SuperAdminDashboard = () => {
     setIsCreatingAdmin(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/signup/admin`, {
+      const response = await fetch(`${API_BASE_URL}/api/super-admins`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...newAdminForm,
-          userType: 'SuperAdmin'
-        })
+        body: JSON.stringify(newAdminForm)
       });
 
       const data = await response.json();
@@ -144,7 +110,7 @@ export const SuperAdminDashboard = () => {
       setNewAdminForm({
         full_name: '',
         email: '',
-        password_hash: '',
+        password: '',
         phone: ''
       });
       setIsAddingAdmin(false);
@@ -174,7 +140,7 @@ export const SuperAdminDashboard = () => {
   ];
 
   const getWelcomeMessage = () => {
-    const displayName = userDetails?.full_name || user?.full_name;
+    const displayName = user?.full_name;
     if (!displayName) return 'Welcome';
     
     const firstName = displayName.split(' ')[0];
@@ -276,14 +242,14 @@ export const SuperAdminDashboard = () => {
         {/* Patients Tab */}
         {activeTab === 'patients' && <PatientManagement />}
 
-        {/* Super Admins Tab */}
-        {activeTab === 'admins' && (
+        {/* Create Super Admin Tab */}
+        {activeTab === 'create-admin' && (
           <div className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Super Admin Management</CardTitle>
-                  <CardDescription>Manage super administrator accounts</CardDescription>
+                  <CardTitle>Create Super Admin</CardTitle>
+                  <CardDescription>Add a new super administrator to the system</CardDescription>
                 </div>
                 {!isAddingAdmin && (
                   <Button onClick={() => setIsAddingAdmin(true)}>
@@ -322,12 +288,12 @@ export const SuperAdminDashboard = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="password_hash">Password</Label>
+                      <Label htmlFor="password">Password</Label>
                       <Input
-                        id="password_hash"
-                        name="password_hash"
+                        id="password"
+                        name="password"
                         type="password"
-                        value={newAdminForm.password_hash}
+                        value={newAdminForm.password}
                         onChange={handleInputChange}
                         required
                         placeholder="Enter password"
@@ -363,7 +329,7 @@ export const SuperAdminDashboard = () => {
                           setNewAdminForm({
                             full_name: '',
                             email: '',
-                            password_hash: '',
+                            password: '',
                             phone: ''
                           });
                         }}

@@ -12,7 +12,7 @@ import { API_BASE_URL } from '@/config/api';
 import { useToast } from '@/hooks/use-toast';
 
 export const Profile = () => {
-  const { user, token } = useAuth();
+  const { user, token, fetchUserProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +56,7 @@ export const Profile = () => {
   const getUpdateEndpoint = () => {
     switch (user?.role) {
       case 'SuperAdmin':
-        return `/api/superadmin/${user.id}`;
+        return `/api/super-admins/${user.id}`;
       case 'Doctor':
         return `/api/doctors/${user.id}`;
       case 'Patient':
@@ -95,7 +95,7 @@ export const Profile = () => {
       
       if (formData.password) {
         // Use the correct field name based on user role
-        const passwordField = user?.role === 'SuperAdmin' ? 'password_hash' : 'password';
+        const passwordField = user?.role === 'SuperAdmin' ? 'password' : 'password';
         formDataToSend.append(passwordField, formData.password);
       }
       
@@ -117,14 +117,6 @@ export const Profile = () => {
         throw new Error(data.message || 'Update failed');
       }
 
-      // Update localStorage with new user data
-      const updatedUser = {
-        ...user,
-        full_name: formData.full_name,
-        profile_picture: data.profile_picture || user?.profile_picture
-      };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
       toast({
         title: "Success",
         description: "Profile updated successfully"
@@ -134,8 +126,8 @@ export const Profile = () => {
       setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
       setSelectedFile(null);
 
-      // Refresh the page to reflect changes
-      window.location.reload();
+      // Refresh user profile data
+      await fetchUserProfile();
 
     } catch (error) {
       toast({

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { API_BASE_URL } from '@/config/api';
 
@@ -8,6 +9,7 @@ interface User {
   role: string;
   is_active: boolean;
   profile_picture?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -18,6 +20,7 @@ interface AuthContextType {
   signup: (userData: any, userType: string) => Promise<void>;
   verifyEmail: (email: string, code: string, userType: string) => Promise<void>;
   isLoading: boolean;
+  fetchUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,8 +51,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: userData.email || '',
             role: userData.role,
             is_active: userData.is_active,
-            profile_picture: userData.profile_picture || ''
+            profile_picture: userData.profile_picture || '',
+            phone: userData.phone || ''
           });
+          
+          // Fetch complete profile data
+          fetchUserProfile();
         }
       } catch (error) {
         console.error('Error loading stored user data:', error);
@@ -60,6 +67,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
   }, [token]);
+
+  const fetchUserProfile = async () => {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser || !token) return;
+
+    try {
+      const userData = JSON.parse(storedUser);
+      let endpoint = '';
+      
+      switch (userData.role) {
+        case 'SuperAdmin':
+          endpoint = `/api/super-admins/${userData.id}`;
+          break;
+        case 'Doctor':
+          endpoint = `/api/doctors/${userData.id}`;
+          break;
+        case 'Patient':
+          endpoint = `/api/patients/${userData.id}`;
+          break;
+        default:
+          return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const profileData = await response.json();
+        const completeUserData = {
+          id: profileData.id || profileData.super_admin_id || profileData.doctor_id || profileData.patient_id,
+          full_name: profileData.full_name || '',
+          email: profileData.email || '',
+          role: userData.role,
+          is_active: profileData.is_active !== undefined ? profileData.is_active : true,
+          profile_picture: profileData.profile_picture || '',
+          phone: profileData.phone || ''
+        };
+
+        setUser(completeUserData);
+        localStorage.setItem('user', JSON.stringify(completeUserData));
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -91,7 +147,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: data.user.email || data.email || email,
         role: data.user.role || data.role,
         is_active: data.is_active !== undefined ? data.is_active : true,
-        profile_picture: data.user.profile_picture || data.profile_picture || ''
+        profile_picture: data.user.profile_picture || data.profile_picture || '',
+        phone: data.user.phone || data.phone || ''
       };
 
       localStorage.setItem('user', JSON.stringify(completeUserData));
@@ -100,6 +157,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(completeUserData);
 
       console.log('Complete user data stored:', completeUserData);
+
+      // Fetch additional profile data
+      setTimeout(() => {
+        fetchUserProfile();
+      }, 100);
 
       // Check if the user is verified
       if (!data.is_active) {
@@ -191,7 +253,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       signup,
       verifyEmail,
-      isLoading
+      isLoading,
+      fetchUserProfile
     }}>
       {children}
     </AuthContext.Provider>
