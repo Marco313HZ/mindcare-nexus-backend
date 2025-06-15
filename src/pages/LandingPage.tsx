@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { API_BASE_URL } from '@/config/api';
 import { Navbar } from '@/components/Navbar';
 import { ContactForm } from '@/components/ContactForm';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Shield, Users, Clock, MapPin, Phone, Mail } from 'lucide-react';
+import { SignupDialog } from '@/components/auth/SignupDialog';
 
 interface ContactInfo {
   location: string;
@@ -17,6 +18,8 @@ interface ContactInfo {
 
 export const LandingPage = () => {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const contactSectionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchContactInfo();
@@ -57,6 +60,16 @@ export const LandingPage = () => {
     }
   ];
 
+  const handleGetStarted = () => {
+    setShowSignup(true);
+  };
+
+  const handleLearnMore = () => {
+    if (contactSectionRef.current) {
+      contactSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <Navbar />
@@ -78,10 +91,10 @@ export const LandingPage = () => {
               Comprehensive psychiatric care with compassionate professionals dedicated to helping you achieve mental wellness and emotional balance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-3">
+              <Button size="lg" className="text-lg px-8 py-3" onClick={handleGetStarted}>
                 Get Started Today
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-3" onClick={handleLearnMore}>
                 Learn More
               </Button>
             </div>
@@ -173,7 +186,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-white">
+      <section id="contact" className="py-20 bg-white" ref={contactSectionRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -249,6 +262,7 @@ export const LandingPage = () => {
 
       {/* ChatBot */}
       <ChatBot />
+      <SignupDialog open={showSignup} onOpenChange={setShowSignup} />
     </div>
   );
 };

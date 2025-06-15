@@ -27,9 +27,9 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
     email: '',
     password: '',
     phone: '',
-    userType: '',
-    specialization: '', // for doctors
-    role_id: '', // for role selection
+    userType: 'doctor', // always doctor
+    specialization: '',
+    role_id: '', // will be set to Doctor's role_id
   });
   const [roles, setRoles] = useState<Role[]>([]);
   const [showVerification, setShowVerification] = useState(false);
@@ -40,6 +40,14 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
       fetchRoles();
     }
   }, [open]);
+
+  useEffect(() => {
+    // Set role_id to the first role with name 'Doctor' (case-insensitive) when roles are loaded
+    const doctorRole = roles.find(role => role.role_name.toLowerCase() === 'doctor');
+    if (doctorRole && formData.role_id !== doctorRole.role_id.toString()) {
+      setFormData(prev => ({ ...prev, role_id: doctorRole.role_id.toString() }));
+    }
+  }, [roles]);
 
   const fetchRoles = async () => {
     try {
@@ -55,27 +63,24 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.userType) {
+    if (!formData.full_name || !formData.email || !formData.password) {
       toast({
         title: "Error",
-        description: "Please select a user type",
+        description: "Please fill all required fields",
         variant: "destructive",
       });
       return;
     }
-
-    if (formData.userType === 'doctor' && !formData.role_id) {
+    if (!formData.role_id) {
       toast({
         title: "Error",
-        description: "Please select a role for the doctor",
+        description: "Doctor role not found. Please contact support.",
         variant: "destructive",
       });
       return;
     }
-
     try {
-      await signup(formData, formData.userType);
+      await signup(formData, 'doctor');
       toast({
         title: "Signup successful",
         description: "Please check your email for a verification code",
@@ -100,9 +105,9 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
       email: '',
       password: '',
       phone: '',
-      userType: '',
+      userType: 'doctor', // reset to default
       specialization: '',
-      role_id: '',
+      role_id: '', // reset role_id
     });
   };
 
@@ -125,18 +130,19 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
             <DialogTitle className="text-2xl font-bold text-center">Sign Up</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            {/* User Type is always Doctor, so hide the dropdown */}
+            {/* <div className="space-y-2">
               <Label htmlFor="userType">User Type</Label>
               <Select value={formData.userType} onValueChange={(value) => handleChange('userType', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select user type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Super Admin</SelectItem>
+            
                   <SelectItem value="doctor">Doctor</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
               <Label htmlFor="full_name">Full Name</Label>
@@ -179,33 +185,20 @@ export const SignupDialog: React.FC<SignupDialogProps> = ({ open, onOpenChange }
               />
             </div>
 
-            {formData.userType === 'doctor' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="role_id">Role</Label>
-                  <Select value={formData.role_id} onValueChange={(value) => handleChange('role_id', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role.role_id} value={role.role_id.toString()}>
-                          {role.role_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="specialization">Specialization</Label>
-                  <Input
-                    id="specialization"
-                    value={formData.specialization}
-                    onChange={(e) => handleChange('specialization', e.target.value)}
-                  />
-                </div>
-              </>
-            )}
+            {/* Role is always Doctor, so hide the dropdown and show as read-only */}
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Input value="Doctor" readOnly disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="specialization">Specialization</Label>
+              <Input
+                id="specialization"
+                value={formData.specialization}
+                onChange={(e) => handleChange('specialization', e.target.value)}
+              />
+            </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
