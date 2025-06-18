@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,8 +25,9 @@ export const SuperAdminDashboard = () => {
   const [newAdminForm, setNewAdminForm] = useState({
     full_name: '',
     email: '',
-    password: '',
-    phone: ''
+    password_hash: '',
+    phone: '',
+    role_id: 1
   });
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
 
@@ -85,6 +85,8 @@ export const SuperAdminDashboard = () => {
     setIsCreatingAdmin(true);
 
     try {
+      console.log('Creating super admin with payload:', newAdminForm);
+      
       const response = await fetch(`${API_BASE_URL}/api/super-admins`, {
         method: 'POST',
         headers: {
@@ -95,6 +97,7 @@ export const SuperAdminDashboard = () => {
       });
 
       const data = await response.json();
+      console.log('Create admin response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to create super admin');
@@ -109,11 +112,13 @@ export const SuperAdminDashboard = () => {
       setNewAdminForm({
         full_name: '',
         email: '',
-        password: '',
-        phone: ''
+        password_hash: '',
+        phone: '',
+        role_id: 1
       });
 
     } catch (error: any) {
+      console.error('Error creating admin:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create super admin",
@@ -243,72 +248,116 @@ export const SuperAdminDashboard = () => {
         {/* Create Super Admin Tab */}
         {activeTab === 'create-admin' && (
           <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Create Super Admin</h2>
+                <p className="text-gray-600 mt-1">Add a new super administrator to the system</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Plus className="h-5 w-5 text-blue-600" />
+                <span className="text-sm text-gray-600">New Admin</span>
+              </div>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle>Create Super Admin</CardTitle>
-                <CardDescription>Add a new super administrator to the system</CardDescription>
+                <CardTitle className="flex items-center space-x-2">
+                  <UserPlus className="h-5 w-5" />
+                  <span>Super Admin Information</span>
+                </CardTitle>
+                <CardDescription>
+                  Fill in the details below to create a new super administrator account
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleCreateAdmin} className="space-y-4 max-w-md">
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name</Label>
-                    <Input
-                      id="full_name"
-                      name="full_name"
-                      type="text"
-                      value={newAdminForm.full_name}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter full name"
-                    />
+                <form onSubmit={handleCreateAdmin} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
+                        Full Name *
+                      </Label>
+                      <Input
+                        id="full_name"
+                        name="full_name"
+                        type="text"
+                        value={newAdminForm.full_name}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter full name"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                        Email Address *
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={newAdminForm.email}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter email address"
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password_hash" className="text-sm font-medium text-gray-700">
+                        Password *
+                      </Label>
+                      <Input
+                        id="password_hash"
+                        name="password_hash"
+                        type="password"
+                        value={newAdminForm.password_hash}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter password"
+                        minLength={6}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                        Phone Number *
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={newAdminForm.phone}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter phone number"
+                        className="w-full"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={newAdminForm.email}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter email address"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={newAdminForm.password}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter password"
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={newAdminForm.phone}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-
-                  <div className="flex space-x-2 pt-4">
+                  <div className="flex justify-end space-x-3 pt-6 border-t">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setNewAdminForm({
+                        full_name: '',
+                        email: '',
+                        password_hash: '',
+                        phone: '',
+                        role_id: 1
+                      })}
+                    >
+                      Clear Form
+                    </Button>
                     <Button 
                       type="submit" 
                       disabled={isCreatingAdmin}
+                      className="min-w-[120px]"
                     >
-                      {isCreatingAdmin ? 'Creating...' : 'Create Super Admin'}
+                      {isCreatingAdmin ? 'Creating...' : 'Create Admin'}
                     </Button>
                   </div>
                 </form>
