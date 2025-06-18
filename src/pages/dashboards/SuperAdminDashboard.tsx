@@ -21,7 +21,6 @@ export const SuperAdminDashboard = () => {
     totalDoctors: 0,
     totalPatients: 0
   });
-  const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
   // Form state for creating new super admin
   const [newAdminForm, setNewAdminForm] = useState({
@@ -106,14 +105,13 @@ export const SuperAdminDashboard = () => {
         description: "Super admin created successfully!",
       });
 
-      // Reset form and close add mode
+      // Reset form
       setNewAdminForm({
         full_name: '',
         email: '',
         password: '',
         phone: ''
       });
-      setIsAddingAdmin(false);
 
     } catch (error: any) {
       toast({
@@ -145,7 +143,7 @@ export const SuperAdminDashboard = () => {
     
     const firstName = displayName.split(' ')[0];
     if (user?.role === 'SuperAdmin') {
-      return `Welcome, ${firstName} Admin`;
+      return `Welcome, ${firstName}`;
     }
     return `Welcome, ${displayName}`;
   };
@@ -246,103 +244,74 @@ export const SuperAdminDashboard = () => {
         {activeTab === 'create-admin' && (
           <div className="space-y-6">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Create Super Admin</CardTitle>
-                  <CardDescription>Add a new super administrator to the system</CardDescription>
-                </div>
-                {!isAddingAdmin && (
-                  <Button onClick={() => setIsAddingAdmin(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Super Admin
-                  </Button>
-                )}
+              <CardHeader>
+                <CardTitle>Create Super Admin</CardTitle>
+                <CardDescription>Add a new super administrator to the system</CardDescription>
               </CardHeader>
               <CardContent>
-                {isAddingAdmin ? (
-                  <form onSubmit={handleCreateAdmin} className="space-y-4 max-w-md">
-                    <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        name="full_name"
-                        type="text"
-                        value={newAdminForm.full_name}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter full name"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={newAdminForm.email}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter email address"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        value={newAdminForm.password}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter password"
-                        minLength={6}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={newAdminForm.phone}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button 
-                        type="submit" 
-                        disabled={isCreatingAdmin}
-                      >
-                        {isCreatingAdmin ? 'Creating...' : 'Create Super Admin'}
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        onClick={() => {
-                          setIsAddingAdmin(false);
-                          setNewAdminForm({
-                            full_name: '',
-                            email: '',
-                            password: '',
-                            phone: ''
-                          });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-600">Click "Add Super Admin" to create a new administrator account</p>
+                <form onSubmit={handleCreateAdmin} className="space-y-4 max-w-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      name="full_name"
+                      type="text"
+                      value={newAdminForm.full_name}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter full name"
+                    />
                   </div>
-                )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={newAdminForm.email}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter email address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={newAdminForm.password}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter password"
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={newAdminForm.phone}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+
+                  <div className="flex space-x-2 pt-4">
+                    <Button 
+                      type="submit" 
+                      disabled={isCreatingAdmin}
+                    >
+                      {isCreatingAdmin ? 'Creating...' : 'Create Super Admin'}
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
           </div>

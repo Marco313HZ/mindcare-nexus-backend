@@ -359,7 +359,7 @@ export const DoctorDashboard = () => {
                           onClick={() => handleViewPatient(patient)}
                           variant="outline"
                         >
-                          View Only
+                          View
                         </Button>
                       </div>
                     );

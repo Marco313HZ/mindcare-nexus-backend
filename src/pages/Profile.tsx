@@ -54,13 +54,16 @@ export const Profile = () => {
   };
 
   const getUpdateEndpoint = () => {
-    switch (user?.role) {
+    const userId = localStorage.getItem('user_id');
+    const role = localStorage.getItem('role');
+
+    switch (role) {
       case 'SuperAdmin':
-        return `/api/super-admins/${user.id}`;
+        return `/api/super-admins/${userId}`;
       case 'Doctor':
-        return `/api/doctors/${user.id}`;
+        return `/api/doctors/${userId}`;
       case 'Patient':
-        return `/api/patients/${user.id}`;
+        return `/api/patients/${userId}`;
       default:
         throw new Error('Invalid user role');
     }
@@ -94,9 +97,8 @@ export const Profile = () => {
       formDataToSend.append('full_name', formData.full_name);
       
       if (formData.password) {
-        // Use the correct field name based on user role
-        const passwordField = user?.role === 'SuperAdmin' ? 'password' : 'password';
-        formDataToSend.append(passwordField, formData.password);
+        // Use password_hash for the API
+        formDataToSend.append('password_hash', formData.password);
       }
       
       if (selectedFile) {

@@ -62,6 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error loading stored user data:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('role');
         setToken(null);
         setUser(null);
       }
@@ -69,22 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [token]);
 
   const fetchUserProfile = async () => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser || !token) return;
+    const storedUserId = localStorage.getItem('user_id');
+    const storedRole = localStorage.getItem('role');
+    
+    if (!storedUserId || !storedRole || !token) return;
 
     try {
-      const userData = JSON.parse(storedUser);
       let endpoint = '';
       
-      switch (userData.role) {
+      switch (storedRole) {
         case 'SuperAdmin':
-          endpoint = `/api/super-admins/${userData.id}`;
+          endpoint = `/api/super-admins/${storedUserId}`;
           break;
         case 'Doctor':
-          endpoint = `/api/doctors/${userData.id}`;
+          endpoint = `/api/doctors/${storedUserId}`;
           break;
         case 'Patient':
-          endpoint = `/api/patients/${userData.id}`;
+          endpoint = `/api/patients/${storedUserId}`;
           break;
         default:
           return;
@@ -103,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: profileData.id || profileData.super_admin_id || profileData.doctor_id || profileData.patient_id,
           full_name: profileData.full_name || '',
           email: profileData.email || '',
-          role: userData.role,
+          role: storedRole,
           is_active: profileData.is_active !== undefined ? profileData.is_active : true,
           profile_picture: profileData.profile_picture || '',
           phone: profileData.phone || ''
@@ -139,6 +142,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Store token and user data with all available information
       setToken(data.token);
       localStorage.setItem('token', data.token);
+      
+      // Store user ID and role separately for API calls
+      localStorage.setItem('user_id', data.user.id.toString());
+      localStorage.setItem('role', data.user.role);
       
       // Make sure we capture all user data from the response
       const completeUserData = {
@@ -243,6 +250,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('role');
   };
 
   return (
