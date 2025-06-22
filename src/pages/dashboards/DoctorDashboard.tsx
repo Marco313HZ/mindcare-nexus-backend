@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Navbar } from '@/components/Navbar';
 import { AppointmentManagement } from '@/components/AppointmentManagement';
 import { PatientManagement } from '@/components/PatientManagement';
 import { PatientDetailsModal } from '@/components/PatientDetailsModal';
+import { PatientHistoryModal } from '@/components/PatientHistoryModal';
 import { Users, Calendar, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/config/api';
@@ -48,6 +48,7 @@ export const DoctorDashboard = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedPatientAppointments, setSelectedPatientAppointments] = useState<Appointment[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -218,6 +219,11 @@ export const DoctorDashboard = () => {
     setIsModalOpen(true);
   };
 
+  const handleViewHistory = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setIsHistoryModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -355,12 +361,20 @@ export const DoctorDashboard = () => {
                             Status: {patient.is_active ? 'Active' : 'Inactive'}
                           </p>
                         </div>
-                        <Button
-                          onClick={() => handleViewPatient(patient)}
-                          variant="outline"
-                        >
-                          View
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleViewPatient(patient)}
+                            variant="outline"
+                          >
+                            View Details
+                          </Button>
+                          <Button
+                            onClick={() => handleViewHistory(patient)}
+                            variant="default"
+                          >
+                            View
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}
@@ -383,6 +397,13 @@ export const DoctorDashboard = () => {
         appointments={selectedPatientAppointments}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {/* Patient History Modal */}
+      <PatientHistoryModal
+        patient={selectedPatient}
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
     </div>
   );
