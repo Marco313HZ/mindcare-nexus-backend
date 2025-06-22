@@ -366,13 +366,13 @@ export const DoctorDashboard = () => {
                             onClick={() => handleViewPatient(patient)}
                             variant="outline"
                           >
-                            View Details
+                            View 
                           </Button>
                           <Button
                             onClick={() => handleViewHistory(patient)}
                             variant="default"
                           >
-                            View
+                            History
                           </Button>
                         </div>
                       </div>

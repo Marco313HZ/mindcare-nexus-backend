@@ -253,10 +253,7 @@ export const SuperAdminDashboard = () => {
                 <h2 className="text-2xl font-bold text-gray-900">Create Super Admin</h2>
                 <p className="text-gray-600 mt-1">Add a new super administrator to the system</p>
               </div>
-              <div className="flex items-center space-x-2">
-                <Plus className="h-5 w-5 text-blue-600" />
-                <span className="text-sm text-gray-600">New Admin</span>
-              </div>
+             
             </div>
 
             <Card>
