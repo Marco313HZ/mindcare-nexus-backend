@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { API_BASE_URL } from '@/config/api';
@@ -16,6 +17,11 @@ interface Patient {
   patient_id: number;
   full_name: string;
   email: string;
+}
+
+interface Doctor {
+  doctor_id: number;
+  full_name: string;
 }
 
 interface Medication {
@@ -32,7 +38,11 @@ interface Treatment {
   treatment_id: number;
   patient_id: number;
   doctor_id: number;
-  description: string;
+  diagnosis: string;
+  treatment_plan: string;
+  start_date: string;
+  end_date: string | null;
+  status: string;
   created_at: string;
 }
 
@@ -62,6 +72,8 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
   const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null);
   const [showMedicationForm, setShowMedicationForm] = useState(false);
   const [showTreatmentForm, setShowTreatmentForm] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const { toast } = useToast();
 
   const [medicationForm, setMedicationForm] = useState({
@@ -72,13 +84,19 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
   });
 
   const [treatmentForm, setTreatmentForm] = useState({
-    description: '',
-    created_at: ''
+    patient_id: '',
+    doctor_id: '',
+    diagnosis: '',
+    treatment_plan: '',
+    start_date: '',
+    end_date: '',
+    status: 'Active'
   });
 
   useEffect(() => {
     if (patient && isOpen) {
       fetchPatientHistory();
+      fetchPatientsAndDoctors();
     }
   }, [patient, isOpen]);
 
@@ -114,6 +132,39 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPatientsAndDoctors = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const [patientsResponse, doctorsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/patients`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_BASE_URL}/api/doctors`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      if (patientsResponse.ok) {
+        const patientsData = await patientsResponse.json();
+        setPatients(patientsData);
+      }
+
+      if (doctorsResponse.ok) {
+        const doctorsData = await doctorsResponse.json();
+        setDoctors(doctorsData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch patients and doctors:', error);
     }
   };
 
@@ -241,23 +292,35 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
 
   const handleCreateTreatment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patient) return;
+    if (!treatmentForm.patient_id || !treatmentForm.doctor_id || !treatmentForm.start_date) {
+      toast({
+        title: "Error",
+        description: "Patient, Doctor, and Start Date are required",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('user_id');
       
+      const payload = {
+        patient_id: parseInt(treatmentForm.patient_id),
+        doctor_id: parseInt(treatmentForm.doctor_id),
+        diagnosis: treatmentForm.diagnosis,
+        treatment_plan: treatmentForm.treatment_plan,
+        start_date: treatmentForm.start_date,
+        end_date: treatmentForm.end_date || null,
+        status: treatmentForm.status
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/treatments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          patient_id: patient.patient_id,
-          doctor_id: parseInt(userId || '1'),
-          ...treatmentForm
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
@@ -265,7 +328,15 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
           title: "Success",
           description: "Treatment created successfully"
         });
-        setTreatmentForm({ description: '', created_at: '' });
+        setTreatmentForm({
+          patient_id: '',
+          doctor_id: '',
+          diagnosis: '',
+          treatment_plan: '',
+          start_date: '',
+          end_date: '',
+          status: 'Active'
+        });
         setShowTreatmentForm(false);
         fetchPatientHistory();
       } else {
@@ -287,18 +358,35 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
 
   const handleUpdateTreatment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTreatment) return;
+    if (!editingTreatment || !treatmentForm.patient_id || !treatmentForm.doctor_id || !treatmentForm.start_date) {
+      toast({
+        title: "Error",
+        description: "Patient, Doctor, and Start Date are required",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const token = localStorage.getItem('token');
       
+      const payload = {
+        patient_id: parseInt(treatmentForm.patient_id),
+        doctor_id: parseInt(treatmentForm.doctor_id),
+        diagnosis: treatmentForm.diagnosis,
+        treatment_plan: treatmentForm.treatment_plan,
+        start_date: treatmentForm.start_date,
+        end_date: treatmentForm.end_date || null,
+        status: treatmentForm.status
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/treatments/${editingTreatment.treatment_id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(treatmentForm)    
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
@@ -307,7 +395,15 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
           description: "Treatment updated successfully"
         });
         setEditingTreatment(null);
-        setTreatmentForm({ description: '', created_at: '' });
+        setTreatmentForm({
+          patient_id: '',
+          doctor_id: '',
+          diagnosis: '',
+          treatment_plan: '',
+          start_date: '',
+          end_date: '',
+          status: 'Active'
+        });
         fetchPatientHistory();
       } else {
         toast({
@@ -374,14 +470,27 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
   const startEditingTreatment = (treatment: Treatment) => {
     setEditingTreatment(treatment);
     setTreatmentForm({
-      description: treatment.description,
-      created_at: treatment.created_at.split('T')[0]
+      patient_id: treatment.patient_id.toString(),
+      doctor_id: treatment.doctor_id.toString(),
+      diagnosis: treatment.diagnosis,
+      treatment_plan: treatment.treatment_plan,
+      start_date: treatment.start_date.split('T')[0],
+      end_date: treatment.end_date ? treatment.end_date.split('T')[0] : '',
+      status: treatment.status
     });
   };
 
   const resetForms = () => {
     setMedicationForm({ name: '', dosage: '', frequency: '', prescribed_date: '' });
-    setTreatmentForm({ description: '', created_at: '' });
+    setTreatmentForm({
+      patient_id: '',
+      doctor_id: '',
+      diagnosis: '',
+      treatment_plan: '',
+      start_date: '',
+      end_date: '',
+      status: 'Active'
+    });
     setEditingMedication(null);
     setEditingTreatment(null);
     setShowMedicationForm(false);
@@ -391,6 +500,25 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
   const handleClose = () => {
     resetForms();
     onClose();
+  };
+
+  const getPatientName = (patientId: number) => {
+    const patient = patients.find(p => p.patient_id === patientId);
+    return patient ? patient.full_name : 'Unknown Patient';
+  };
+
+  const getDoctorName = (doctorId: number) => {
+    const doctor = doctors.find(d => d.doctor_id === doctorId);
+    return doctor ? doctor.full_name : 'Unknown Doctor';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'discontinued': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   if (!patient) return null;
@@ -495,6 +623,9 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
                               <p className="text-sm text-gray-600">
                                 <strong>Prescribed:</strong> {new Date(medication.prescribed_date).toLocaleDateString()}
                               </p>
+                              <p className="text-sm text-gray-600">
+                                <strong>Doctor:</strong> {getDoctorName(medication.doctor_id)}
+                              </p>
                             </div>
                             <div className="flex gap-2">
                               <Button 
@@ -552,24 +683,83 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
                     </CardHeader>
                     <CardContent>
                       <form onSubmit={editingTreatment ? handleUpdateTreatment : handleCreateTreatment} className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Description</label>
-                          <textarea
-                            className="w-full p-2 border rounded-md"
-                            rows={4}
-                            value={treatmentForm.description}
-                            onChange={(e) => setTreatmentForm({...treatmentForm, description: e.target.value})}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Date</label>
-                          <Input
-                            type="date"
-                            value={treatmentForm.created_at}
-                            onChange={(e) => setTreatmentForm({...treatmentForm, created_at: e.target.value})}
-                            required
-                          />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Patient *</label>
+                            <Select value={treatmentForm.patient_id} onValueChange={(value) => setTreatmentForm({...treatmentForm, patient_id: value})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select patient" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {patients.map((p) => (
+                                  <SelectItem key={p.patient_id} value={p.patient_id.toString()}>
+                                    {p.full_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Doctor *</label>
+                            <Select value={treatmentForm.doctor_id} onValueChange={(value) => setTreatmentForm({...treatmentForm, doctor_id: value})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select doctor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {doctors.map((d) => (
+                                  <SelectItem key={d.doctor_id} value={d.doctor_id.toString()}>
+                                    {d.full_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Diagnosis *</label>
+                            <Input
+                              value={treatmentForm.diagnosis}
+                              onChange={(e) => setTreatmentForm({...treatmentForm, diagnosis: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Treatment Plan *</label>
+                            <Input
+                              value={treatmentForm.treatment_plan}
+                              onChange={(e) => setTreatmentForm({...treatmentForm, treatment_plan: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Start Date *</label>
+                            <Input
+                              type="date"
+                              value={treatmentForm.start_date}
+                              onChange={(e) => setTreatmentForm({...treatmentForm, start_date: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">End Date</label>
+                            <Input
+                              type="date"
+                              value={treatmentForm.end_date}
+                              onChange={(e) => setTreatmentForm({...treatmentForm, end_date: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Status *</label>
+                            <Select value={treatmentForm.status} onValueChange={(value) => setTreatmentForm({...treatmentForm, status: value})}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Active">Active</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="Discontinued">Discontinued</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <Button type="submit">
@@ -590,16 +780,40 @@ export const PatientHistoryModal: React.FC<PatientHistoryModalProps> = ({
                       <Card key={treatment.treatment_id}>
                         <CardContent className="pt-6">
                           <div className="flex justify-between items-start">
-                            <div className="space-y-2">
-                              <p className="text-sm text-gray-600">
-                                <strong>Date:</strong> {new Date(treatment.created_at).toLocaleDateString()}
-                              </p>
-                              <p className="text-sm">
-                                <strong>Description:</strong>
-                              </p>
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{treatment.description}</p>
+                            <div className="space-y-2 flex-1">
+                              <div className="flex items-center gap-2 mb-3">
+                                <h4 className="font-medium text-lg">{treatment.diagnosis}</h4>
+                                <Badge className={getStatusColor(treatment.status)}>
+                                  {treatment.status}
+                                </Badge>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>Treatment Plan:</strong> {treatment.treatment_plan}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>Doctor:</strong> {getDoctorName(treatment.doctor_id)}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>Patient:</strong> {getPatientName(treatment.patient_id)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>Start Date:</strong> {new Date(treatment.start_date).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>End Date:</strong> {treatment.end_date ? new Date(treatment.end_date).toLocaleDateString() : 'Ongoing'}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    <strong>Created:</strong> {new Date(treatment.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 ml-4">
                               <Button 
                                 size="sm" 
                                 variant="outline"
